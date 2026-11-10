@@ -2,7 +2,6 @@ from src.database.config import supabase
 import bcrypt
 
 
-
 def hash_pass(pwd):
     return bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
 
@@ -17,9 +16,14 @@ def check_teacher_exists(username):
 
 
 
-def create_teacher(username, password, name):
+def create_teacher(teacher_username, teacher_password, teacher_name):
 
-    data = { "username" : username, "password": hash_pass(password), "name": name}
+    data = {
+        "username": teacher_username,
+        "password": hash_pass(teacher_password),
+        "name": teacher_name
+    }
+
     response = supabase.table("teachers").insert(data).execute()
     return response.data
 
@@ -60,7 +64,7 @@ def get_teacher_subjects(teacher_id):
         sub['total_classes'] = unique_sessions
 
 
-        sub.pop('subject_student', None)
+        sub.pop('subject_students', None)
         sub.pop('attendance_logs', None)
 
     return subjects

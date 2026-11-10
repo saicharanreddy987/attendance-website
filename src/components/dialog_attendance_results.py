@@ -1,50 +1,36 @@
 import streamlit as st
 from src.database.db import enroll_student_to_subject
 from src.database.config import supabase
-from PIL import Image
 import time
 
 
-@st.dialog("Capture or upload photos")
-def add_photos_dialog():
+from src.database.db import create_attendance
 
-    st.write('Add classroom photos to scan for attendance')
+def show_attendance_result(df, logs):
+    st.write('Please review attendance before confirming.')
+    st.dataframe(df, hide_index=True, width='stretch')
 
-    if 'photo_tab' not in st.session_state:
-        st.session_state.photo_tab = 'camera'
+    col1, col2 = st.columns(2)
 
-    t1, t2 = st.columns(2)
-
-    with t1:
-        type_camera = "primary" if st.session_state.photo_tab == 'camera' else 'tertiary'
-        if st.button('Camera', type=type_camera, width='stretch'):
-            st.session_state.photo_tab = 'camera'
-
-
-
-    with t2:
-        type_upload = "primary" if st.session_state.photo_tab == 'upload' else 'tertiary'
-        if st.button('Upload photos', type=type_upload, width='stretch'):
-            st.session_state.photo_tab = 'upload'
-
-    if st.session_state.photo_tab == 'camera':
-        cam_photo = st.camera_input('Take Snapshot', key='dialog_cam')
-        if cam_photo:
-            st.session_state.attendance_images.append(Image.open(cam_photo))
-            st.toast('Photo Captured')
+    with col1:
+        if st.button('Discard', width='stretch'):
+            st.session_state.voice_attendance_results = None
+            st.session_state.attendance_images = []
             st.rerun()
 
+    with col2:
+        if st.button('Confirm & Save', width='stretch', type='primary'):
+            try:
+                create_attendance(logs)
+                st.toast("Attendance taken")
+                st.session_state.attendance_images = []
+                st.session_state.voice_attendance_results = None
+                st.rerun()
+            except Exception as e:
+                st.error('Sync failed!')
 
-    if st.session_state.photo_tab == 'upload':
-        uploaded_files = st.file_uploader( 'choose image files', type=['jpg', 'png', 'jpeg' ], accept_multiple_files=True, key='dialog_upload')
 
-        if uploaded_files:
-            for f in uploaded_files:
-                st.session_state.attendance_images.append(Image.open(f))
-            
-            st.toast('Photo Uploaded Successfully')
-            st.rerun()
 
-    st.divider()
-    if st.button('Done', type='primary', width='stretch'):
-        st.rerun()
+@st.dialog("Attendance Reports")
+def attendance_result_dialog(df, logs):
+    show_attendance_result(df, logs)
