@@ -93,7 +93,7 @@ Deployed using **Streamlit Community Cloud**.
 
 **Sai Charan Reddy**
 
-GitHub: YOUR_GITHUB_PROFILE_URL
+GitHub: [YOUR_GITHUB_PROFILE_URL](https://github.com/saicharanreddy987)
 
 ---
 
